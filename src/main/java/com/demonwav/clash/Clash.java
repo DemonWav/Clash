@@ -8,14 +8,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import sun.misc.Unsafe;
 
@@ -82,7 +80,7 @@ public class Clash {
 
             try {
                 if (!argument.defaultCreator().isInterface()) {
-                    setField(field, t, init(argument.defaultCreator()).createDefault());
+                    setField(field, t, init(argument.defaultCreator()).createDefault(field.getName()));
                 } else if (!argument.defaultValue().equals("")) {
                     initializeValue(field, t, argument.defaultValue());
                 } else if (argument.required()) {
@@ -221,7 +219,7 @@ public class Clash {
 
         if (!annotation.initializer().isInterface()) {
             final Initializer initializer = init(annotation.initializer());
-            setField(field, object, initializer.initialize(value));
+            setField(field, object, initializer.initialize(field.getName(), value));
             // primitives aren't covered by their boxed classes in these checks
             // String first because it's probably very common
         } else if (type.isAssignableFrom(String.class) || type.isAssignableFrom(CharSequence.class)) {
