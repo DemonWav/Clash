@@ -301,13 +301,13 @@ public class Clash {
         } else if (type.isAssignableFrom(Boolean[].class)) {
             throw TODO;
             // Other Number arrays
-        } else if (type.isAssignableFrom(BigInteger.class)) {
+        } else if (type.isAssignableFrom(BigInteger[].class)) {
             throw TODO;
-        } else if (type.isAssignableFrom(BigDecimal.class)) {
+        } else if (type.isAssignableFrom(BigDecimal[].class)) {
             throw TODO;
-        } else if (type.isAssignableFrom(AtomicInteger.class)) {
+        } else if (type.isAssignableFrom(AtomicInteger[].class)) {
             throw TODO;
-        } else if (type.isAssignableFrom(AtomicLong.class)) {
+        } else if (type.isAssignableFrom(AtomicLong[].class)) {
             throw TODO;
             // Other arrays
         } else if (type.isAssignableFrom(String[].class)) {
