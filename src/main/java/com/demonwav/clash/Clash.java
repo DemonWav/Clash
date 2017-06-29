@@ -1,6 +1,8 @@
 package com.demonwav.clash;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -62,7 +64,7 @@ public class Clash {
             argMap.entrySet().removeIf(entry -> entry.getValue() == field);
 
             try {
-                initializeValue(field, value, t);
+                initializeValue(field, t, value);
             } catch (IllegalAccessException | NoSuchFieldException | InstantiationException e) {
                 throw new ClashException(e);
             }
@@ -74,9 +76,9 @@ public class Clash {
 
             try {
                 if (!argument.defaultCreator().isInterface()) {
-                    field.set(t, argument.defaultCreator().newInstance().createDefault());
+                    setField(field, t, init(argument.defaultCreator()).createDefault());
                 } else if (!argument.defaultValue().equals("")) {
-                    initializeValue(field, argument.defaultValue(), t);
+                    initializeValue(field, t, argument.defaultValue());
                 } else if (argument.required()) {
                     throw new ClashException("Required argument not provided: " + argument.shortName());
                 }
@@ -173,10 +175,114 @@ public class Clash {
         return map;
     }
 
-    private static void initializeValue(final Field field, final String value, final Object object)
+    private static void initializeValue(final Field field, final Object object, final String value)
             throws IllegalAccessException, NoSuchFieldException, InstantiationException {
 
         final Class<?> type = field.getType();
+        field.setAccessible(true);
+
+        final Argument annotation = field.getAnnotation(Argument.class);
+        assert annotation != null;
+
+        if (!annotation.initializer().isInterface()) {
+            final Initializer initializer = init(annotation.initializer());
+            setField(field, object, initializer.initialize(value));
+            // primitives aren't covered by their boxed classes in these checks
+            // String first because it's probably very common
+        } else if (type.isAssignableFrom(String.class) || type.isAssignableFrom(CharSequence.class)) {
+            setField(field, object, value);
+            // Primitives
+        } else if (type.isAssignableFrom(byte.class)) {
+            setField(field, object, Byte.valueOf(value));
+        } else if (type.isAssignableFrom(short.class)) {
+            setField(field, object, Short.valueOf(value));
+        } else if (type.isAssignableFrom(int.class)) {
+            setField(field, object, Integer.valueOf(value));
+        } else if (type.isAssignableFrom(long.class)) {
+            setField(field, object, Long.valueOf(value));
+        } else if (type.isAssignableFrom(float.class)) {
+            setField(field, object, Float.valueOf(value));
+        } else if (type.isAssignableFrom(double.class)) {
+            setField(field, object, Double.valueOf(value));
+        } else if (type.isAssignableFrom(boolean.class)) {
+            setField(field, object, Boolean.valueOf(value));
+        } else if (type.isAssignableFrom(char.class)) {
+            setField(field, object, value.charAt(0));
+            // Boxed classes
+        } else if (type.isAssignableFrom(Byte.class)) {
+            setField(field, object, Byte.valueOf(value));
+        } else if (type.isAssignableFrom(Short.class)) {
+            setField(field, object, Short.valueOf(value));
+        } else if (type.isAssignableFrom(Integer.class)) {
+            setField(field, object, Integer.valueOf(value));
+        } else if (type.isAssignableFrom(Long.class)) {
+            setField(field, object, Long.valueOf(value));
+        } else if (type.isAssignableFrom(Float.class)) {
+            setField(field, object, Float.valueOf(value));
+        } else if (type.isAssignableFrom(Double.class)) {
+            setField(field, object, Double.valueOf(value));
+        } else if (type.isAssignableFrom(Boolean.class)) {
+            setField(field, object, Boolean.valueOf(value));
+        } else if (type.isAssignableFrom(Character.class)) {
+            setField(field, object, value.charAt(0));
+            // Other Number children
+        } else if (type.isAssignableFrom(BigInteger.class)) {
+            setField(field, object, new BigInteger(value, 10));
+        } else if (type.isAssignableFrom(BigDecimal.class)) {
+            setField(field, object, new BigDecimal(value));
+        } else if (type.isAssignableFrom(AtomicInteger.class)) {
+            setField(field, object, new AtomicInteger(Integer.valueOf(value)));
+        } else if (type.isAssignableFrom(AtomicLong.class)) {
+            setField(field, object, new AtomicLong(Long.valueOf(value)));
+            // Primitive arrays
+        } else if (type.isAssignableFrom(byte[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(short[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(int[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(long[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(float[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(double[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(boolean[].class)) {
+            throw TODO;
+            // Boxed arrays
+        } else if (type.isAssignableFrom(Byte[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(Short[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(Integer[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(Long[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(Float[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(Double[].class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(Boolean[].class)) {
+            throw TODO;
+            // Other Number arrays
+        } else if (type.isAssignableFrom(BigInteger.class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(BigDecimal.class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(AtomicInteger.class)) {
+            throw TODO;
+        } else if (type.isAssignableFrom(AtomicLong.class)) {
+            throw TODO;
+            // Other arrays
+        } else if (type.isAssignableFrom(String[].class)) {
+            throw TODO;
+            // Other cases
+        } else {
+            throw TODO;
+        }
+    }
+
+    private static void setField(final Field field, final Object object, final Object value) throws IllegalAccessException, NoSuchFieldException {
         field.setAccessible(true);
 
         boolean isFinal = false;
@@ -189,101 +295,7 @@ public class Clash {
                 modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
             }
 
-            final Argument annotation = field.getAnnotation(Argument.class);
-            assert annotation != null;
-
-            if (!annotation.initializer().isInterface()) {
-                final Initializer initializer = annotation.initializer().newInstance();
-                field.set(object, initializer.initialize(value));
-                // primitives aren't covered by their boxed classes in these checks
-                // String first because it's probably very common
-            } else if (type.isAssignableFrom(String.class) || type.isAssignableFrom(CharSequence.class)) {
-                field.set(object, value);
-                // Primitives
-            } else if (type.isAssignableFrom(byte.class)) {
-                field.setByte(object, Byte.valueOf(value));
-            } else if (type.isAssignableFrom(short.class)) {
-                field.setShort(object, Short.valueOf(value));
-            } else if (type.isAssignableFrom(int.class)) {
-                field.setInt(object, Integer.valueOf(value));
-            } else if (type.isAssignableFrom(long.class)) {
-                field.setLong(object, Long.valueOf(value));
-            } else if (type.isAssignableFrom(float.class)) {
-                field.setFloat(object, Float.valueOf(value));
-            } else if (type.isAssignableFrom(double.class)) {
-                field.setDouble(object, Double.valueOf(value));
-            } else if (type.isAssignableFrom(boolean.class)) {
-                field.setBoolean(object, Boolean.valueOf(value));
-                // Boxed classes
-            } else if (type.isAssignableFrom(Byte.class)) {
-                field.set(object, Byte.valueOf(value));
-            } else if (type.isAssignableFrom(Short.class)) {
-                field.set(object, Short.valueOf(value));
-            } else if (type.isAssignableFrom(Integer.class)) {
-                field.set(object, Integer.valueOf(value));
-            } else if (type.isAssignableFrom(Long.class)) {
-                field.set(object, Long.valueOf(value));
-            } else if (type.isAssignableFrom(Float.class)) {
-                field.set(object, Float.valueOf(value));
-            } else if (type.isAssignableFrom(Double.class)) {
-                field.set(object, Double.valueOf(value));
-            } else if (type.isAssignableFrom(Boolean.class)) {
-                field.set(object, Boolean.valueOf(value));
-                // Other Number children
-            } else if (type.isAssignableFrom(BigInteger.class)) {
-                field.set(object, new BigInteger(value, 10));
-            } else if (type.isAssignableFrom(BigDecimal.class)) {
-                field.set(object, new BigDecimal(value));
-            } else if (type.isAssignableFrom(AtomicInteger.class)) {
-                field.set(object, new AtomicInteger(Integer.valueOf(value)));
-            } else if (type.isAssignableFrom(AtomicLong.class)) {
-                field.set(object, new AtomicLong(Long.valueOf(value)));
-                // Primitive arrays
-            } else if (type.isAssignableFrom(byte[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(short[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(int[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(long[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(float[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(double[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(boolean[].class)) {
-                throw TODO;
-                // Boxed arrays
-            } else if (type.isAssignableFrom(Byte[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(Short[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(Integer[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(Long[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(Float[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(Double[].class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(Boolean[].class)) {
-                throw TODO;
-                // Other Number arrays
-            } else if (type.isAssignableFrom(BigInteger.class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(BigDecimal.class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(AtomicInteger.class)) {
-                throw TODO;
-            } else if (type.isAssignableFrom(AtomicLong.class)) {
-                throw TODO;
-                // Other arrays
-            } else if (type.isAssignableFrom(String[].class)) {
-                throw TODO;
-                // Other cases
-            } else {
-                throw TODO;
-            }
+            field.set(object, value);
         } finally {
             if (isFinal) {
                 // reset it to final
@@ -301,6 +313,16 @@ public class Clash {
             theUnsafe.setAccessible(true);
             return (Unsafe) theUnsafe.get(null);
         } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new ClashException(e);
+        }
+    }
+
+    private static <T> T init(Class<T> clazz) {
+        try {
+            final Constructor<T> constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
             throw new ClashException(e);
         }
     }

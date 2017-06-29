@@ -16,7 +16,7 @@ public class BasicTest {
     private static final Boolean boo = false;
 
     @Test
-    public void simpleTest() {
+    public void basicTest() {
         final String[] args = new String[] {
             "-b", String.valueOf(b),
             "--short=" + s,
@@ -81,12 +81,13 @@ public class BasicTest {
                 i == bean.i &&
                 l == bean.l &&
                 Objects.equals(st, bean.st) &&
-                Objects.equals(boo, bean.boo);
+                Objects.equals(boo, bean.boo) &&
+                Objects.equals(wat, bean.wat);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(b, s, i, l, st, boo);
+            return Objects.hash(b, s, i, l, st, boo, wat);
         }
     }
 }
