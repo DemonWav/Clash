@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Argument {
 
-    String shortName();
+    String[] shortNames();
     String configName() default "";
     String[] longNames() default {};
     String description() default "";

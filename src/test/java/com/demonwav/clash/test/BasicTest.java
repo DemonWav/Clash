@@ -29,19 +29,19 @@ public class BasicTest {
     }
 
     private static class Bean {
-        @Argument(shortName = "b", longNames = "byte")
+        @Argument(shortNames = "b", longNames = "byte")
         private final byte b;
-        @Argument(shortName = "s", longNames = "short")
+        @Argument(shortNames = "s", longNames = "short")
         private final short s;
-        @Argument(shortName = "i", longNames = "integer")
+        @Argument(shortNames = "i", longNames = "integer")
         private final int i;
-        @Argument(shortName = "l", longNames = "long", defaultValue = "" + BasicTest.l)
+        @Argument(shortNames = "l", longNames = "long", defaultValue = "" + BasicTest.l)
         private final long l;
-        @Argument(shortName = "st", longNames = "string")
+        @Argument(shortNames = "st", longNames = "string")
         private final String st;
-        @Argument(shortName = "boo", longNames = "boolean")
+        @Argument(shortNames = "boo", longNames = "boolean")
         private final Boolean boo;
-        @Argument(shortName = "wat", required = false)
+        @Argument(shortNames = "wat", required = false)
         private final Object wat;
 
         private Bean(byte b, short s, int i, long l, String st, Boolean boo) {

@@ -23,9 +23,9 @@ public class InitMethodTest {
     }
 
     private static class Bean {
-        @Argument(shortName = "f")
+        @Argument(shortNames = "f")
         private final String firstName;
-        @Argument(shortName = "l")
+        @Argument(shortNames = "l")
         private final String lastName;
         private String fullName;
 

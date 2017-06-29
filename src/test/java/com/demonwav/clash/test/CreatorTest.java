@@ -19,7 +19,7 @@ public class CreatorTest {
     }
 
     private static class Bean {
-        @Argument(shortName = "r", defaultCreator = Create.class)
+        @Argument(shortNames = "r", defaultCreator = Create.class)
         private final String res;
 
         private Bean(String res) {

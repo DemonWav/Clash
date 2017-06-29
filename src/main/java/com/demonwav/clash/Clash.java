@@ -84,7 +84,7 @@ public class Clash {
                 } else if (!argument.defaultValue().equals("")) {
                     initializeValue(field, t, argument.defaultValue());
                 } else if (argument.required()) {
-                    throw new ClashException("Required argument not provided: " + argument.shortName());
+                    throw new ClashException("Required argument not provided: " + argument.shortNames()[0]);
                 }
             } catch (IllegalAccessException | InstantiationException | NoSuchFieldException e) {
                 throw new ClashException(e);
@@ -172,11 +172,13 @@ public class Clash {
             final Argument annotation = field.getAnnotation(Argument.class);
             assert annotation != null;
 
-            if (annotation.shortName().startsWith("-")) {
-                throw new ClashException(dashMessage + annotation.shortName());
-            }
-            if (pattern.matcher(annotation.shortName()).find()) {
-                throw new ClashException(whitespaceMessage + annotation.shortName());
+            for (String name : annotation.shortNames()) {
+                if (name.startsWith("-")) {
+                    throw new ClashException(dashMessage + name);
+                }
+                if (pattern.matcher(name).find()) {
+                    throw new ClashException(whitespaceMessage + name);
+                }
             }
 
             for (String name : annotation.longNames()) {
@@ -198,8 +200,9 @@ public class Clash {
             final Argument annotation = field.getAnnotation(Argument.class);
             assert annotation != null;
 
-            map.put(annotation.shortName(), field);
-
+            for (String name : annotation.shortNames()) {
+                map.put(name, field);
+            }
             for (String name : annotation.longNames()) {
                 map.put(name, field);
             }

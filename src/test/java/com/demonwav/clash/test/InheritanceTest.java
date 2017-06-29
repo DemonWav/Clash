@@ -23,7 +23,7 @@ public class InheritanceTest {
     }
 
     private static class BeanTwo extends BeanOne {
-        @Argument(shortName = "t")
+        @Argument(shortNames = "t")
         private final String two;
         private String watTwo;
 
@@ -60,7 +60,7 @@ public class InheritanceTest {
     }
 
     private static class BeanOne {
-        @Argument(shortName = "o")
+        @Argument(shortNames = "o")
         final String one;
         String watOne;
 

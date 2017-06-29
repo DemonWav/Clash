@@ -21,7 +21,7 @@ public class InitializerTest {
     }
 
     private static class Bean {
-        @Argument(shortName = "r", longNames = "result", initializer = Init.class)
+        @Argument(shortNames = "r", longNames = "result", initializer = Init.class)
         private final String res;
 
         private Bean(String res) {

@@ -20,7 +20,7 @@ public class InitializerDefaultTest {
     }
 
     private static class Bean {
-        @Argument(shortName = "r", initializer = Init.class, defaultValue = asdf)
+        @Argument(shortNames = "r", initializer = Init.class, defaultValue = asdf)
         private final String res;
 
         private Bean(String res) {
