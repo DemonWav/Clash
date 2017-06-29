@@ -1,15 +1,21 @@
 package com.demonwav.clash;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import sun.misc.Unsafe;
 
@@ -87,45 +93,74 @@ public class Clash {
             }
         }
 
+        final Method[] methods = removeUnusedMethods(getAllMethods(clazz));
+        for (Method method : methods) {
+            try {
+                method.setAccessible(true);
+                method.invoke(t);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new ClashException(e);
+            }
+        }
+
         return t;
     }
 
     private static Field[] getAllFields(final Class<?> clazz) {
-        final Field[] fields = clazz.getDeclaredFields();
-        final Class<?> superClazz = clazz.getSuperclass();
-
-        if (superClazz != null) {
-            final Field[] moreFields = getAllFields(superClazz);
-            if (moreFields.length == 0) {
-                return fields;
-            }
-
-            final Field[] newFields = new Field[fields.length + moreFields.length];
-            System.arraycopy(fields, 0, newFields, 0, fields.length);
-            System.arraycopy(moreFields, 0, newFields, fields.length, moreFields.length);
-
-            return newFields;
-        }
-        return fields;
+        return getAll(Field.class, clazz, Class::getDeclaredFields);
     }
 
     private static Field[] removeUnusedFields(final Field[] fields) {
-        final Field[] result = new Field[fields.length];
+        return removeUnused(fields, Field.class, f ->
+            !Modifier.isTransient(f.getModifiers()) &&
+            !Modifier.isStatic(f.getModifiers()) &&
+            f.getAnnotation(Argument.class) != null
+        );
+    }
+
+    private static Method[] getAllMethods(final Class<?> clazz) {
+        return getAll(Method.class, clazz, Class::getDeclaredMethods);
+    }
+
+    private static Method[] removeUnusedMethods(final Method[] methods) {
+        return removeUnused(methods, Method.class, m -> !Modifier.isStatic(m.getModifiers()) && m.getAnnotation(Init.class) != null);
+    }
+
+    private static <T> T[] getAll(final Class<T> arrayClazz, final Class<?> beanClazz, final Function<Class<?>, T[]> func) {
+        final T[] stuff = func.apply(beanClazz);
+        final Class<?> superClazz = beanClazz.getSuperclass();
+
+        if (superClazz != null) {
+            final T[] moreStuff = getAll(arrayClazz, superClazz, func);
+            if (moreStuff.length == 0) {
+                return stuff;
+            }
+
+            //noinspection unchecked
+            final T[] newStuff = (T[]) Array.newInstance(arrayClazz, stuff.length + moreStuff.length);
+            System.arraycopy(stuff, 0, newStuff, 0, stuff.length);
+            System.arraycopy(moreStuff, 0, newStuff, stuff.length, moreStuff.length);
+
+            return newStuff;
+        }
+        return stuff;
+    }
+
+    private static <T> T[] removeUnused(final T[] array, final Class<T> arrayClazz, final Predicate<T> tester) {
+        //noinspection unchecked
+        final T[] result = (T[]) Array.newInstance(arrayClazz, array.length);
 
         int counter = 0;
-        for (Field field : fields) {
-            if (Modifier.isTransient(field.getModifiers())) {
+        for (T t : array) {
+            if (!tester.test(t)) {
                 continue;
             }
 
-            if (field.getAnnotation(Argument.class) == null) {
-                continue;
-            }
-
-            result[counter++] = field;
+            result[counter++] = t;
         }
 
-        final Field[] finalResult = new Field[counter];
+        //noinspection unchecked
+        final T[] finalResult = (T[]) Array.newInstance(arrayClazz, counter);
         System.arraycopy(result, 0, finalResult, 0, counter);
         return finalResult;
     }
