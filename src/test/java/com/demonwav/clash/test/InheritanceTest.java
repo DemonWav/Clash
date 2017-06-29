@@ -19,9 +19,7 @@ public class InheritanceTest {
             "-o", one,
             "-t", two
         };
-        final BeanTwo init = Clash.init(BeanTwo.class, args);
-        System.out.println(init);
-        Assert.assertEquals(new BeanTwo(one, wat + one, two, wat + two), init);
+        Assert.assertEquals(new BeanTwo(one, wat + one, two, wat + two), Clash.init(BeanTwo.class, args));
     }
 
     private static class BeanTwo extends BeanOne {
