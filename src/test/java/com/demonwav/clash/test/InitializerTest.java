@@ -29,14 +29,6 @@ public class InitializerTest {
         }
 
         @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("Bean{");
-            sb.append("res='").append(res).append('\'');
-            sb.append('}');
-            return sb.toString();
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
@@ -55,7 +47,7 @@ public class InitializerTest {
 
         private static class Init implements Initializer<String> {
             @Override
-            public String initialize(String value) {
+            public String initialize(String fieldName, String value) {
                 return value + value;
             }
         }

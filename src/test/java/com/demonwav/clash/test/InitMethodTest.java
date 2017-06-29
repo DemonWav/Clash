@@ -41,16 +41,6 @@ public class InitMethodTest {
         }
 
         @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("Bean{");
-            sb.append("firstName='").append(firstName).append('\'');
-            sb.append(", lastName='").append(lastName).append('\'');
-            sb.append(", fullName='").append(fullName).append('\'');
-            sb.append('}');
-            return sb.toString();
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (this == o) {
                 return true;

@@ -27,14 +27,6 @@ public class CreatorTest {
         }
 
         @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("Bean{");
-            sb.append("res='").append(res).append('\'');
-            sb.append('}');
-            return sb.toString();
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
@@ -53,7 +45,7 @@ public class CreatorTest {
 
         private static class Create implements Creator<String> {
             @Override
-            public String createDefault() {
+            public String createDefault(String fieldName) {
                 return string;
             }
         }
