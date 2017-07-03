@@ -306,7 +306,7 @@ public class Clash {
         }
     }
 
-    private static <T> Object handleArray(final Class<?> arrayClass, final String arg, final Function<String, Object> func) {
+    private static Object handleArray(final Class<?> arrayClass, final String arg, final Function<String, Object> func) {
         final String trimmed = arg.trim();
         final String noBrackets = trimmed.replaceAll("(^[\\[({]\\s*|\\s*[])}]$)", "");
         final String[] items;
