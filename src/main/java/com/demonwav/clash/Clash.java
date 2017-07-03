@@ -247,7 +247,7 @@ public class Clash {
             setField(field, object, value.charAt(0));
             // Other Number children
         } else if (type.isAssignableFrom(BigInteger.class)) {
-            setField(field, object, new BigInteger(value, 10));
+            setField(field, object, new BigInteger(value));
         } else if (type.isAssignableFrom(BigDecimal.class)) {
             setField(field, object, new BigDecimal(value));
         } else if (type.isAssignableFrom(AtomicInteger.class)) {
@@ -290,13 +290,13 @@ public class Clash {
             setField(field, object, handleArray(Character.class, value, s -> s.charAt(0)));
             // Other Number arrays
         } else if (type.isAssignableFrom(BigInteger[].class)) {
-            throw TODO;
+            setField(field, object, handleArray(BigInteger.class, value, BigInteger::new));
         } else if (type.isAssignableFrom(BigDecimal[].class)) {
-            throw TODO;
+            setField(field, object, handleArray(BigDecimal.class, value, BigDecimal::new));
         } else if (type.isAssignableFrom(AtomicInteger[].class)) {
-            throw TODO;
+            setField(field, object, handleArray(AtomicInteger.class, value, s -> new AtomicInteger(Integer.valueOf(s))));
         } else if (type.isAssignableFrom(AtomicLong[].class)) {
-            throw TODO;
+            setField(field, object, handleArray(AtomicLong.class, value, s -> new AtomicLong(Long.valueOf(s))));
             // Other arrays
         } else if (type.isAssignableFrom(String[].class)) {
             throw TODO;
