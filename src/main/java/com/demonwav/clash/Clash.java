@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -227,39 +228,22 @@ public class Clash {
             // String first because it's probably very common
         } else if (type.isAssignableFrom(String.class) || type.isAssignableFrom(CharSequence.class)) {
             setField(field, object, value);
-            // Primitives
-        } else if (type.isAssignableFrom(byte.class)) {
+            // Primitives and Boxed types
+        } else if (type == byte.class || type == Byte.class) {
             setField(field, object, Byte.valueOf(value));
-        } else if (type.isAssignableFrom(short.class)) {
+        } else if (type == short.class || type == Short.class) {
             setField(field, object, Short.valueOf(value));
-        } else if (type.isAssignableFrom(int.class)) {
+        } else if (type == int.class || type == Integer.class) {
             setField(field, object, Integer.valueOf(value));
-        } else if (type.isAssignableFrom(long.class)) {
+        } else if (type == long.class || type == Long.class) {
             setField(field, object, Long.valueOf(value));
-        } else if (type.isAssignableFrom(float.class)) {
+        } else if (type == float.class || type == Float.class) {
             setField(field, object, Float.valueOf(value));
-        } else if (type.isAssignableFrom(double.class)) {
+        } else if (type == double.class || type == Double.class) {
             setField(field, object, Double.valueOf(value));
-        } else if (type.isAssignableFrom(boolean.class)) {
+        } else if (type == boolean.class || type == Boolean.class) {
             setField(field, object, Boolean.valueOf(value));
-        } else if (type.isAssignableFrom(char.class)) {
-            setField(field, object, value.charAt(0));
-            // Boxed classes
-        } else if (type.isAssignableFrom(Byte.class)) {
-            setField(field, object, Byte.valueOf(value));
-        } else if (type.isAssignableFrom(Short.class)) {
-            setField(field, object, Short.valueOf(value));
-        } else if (type.isAssignableFrom(Integer.class)) {
-            setField(field, object, Integer.valueOf(value));
-        } else if (type.isAssignableFrom(Long.class)) {
-            setField(field, object, Long.valueOf(value));
-        } else if (type.isAssignableFrom(Float.class)) {
-            setField(field, object, Float.valueOf(value));
-        } else if (type.isAssignableFrom(Double.class)) {
-            setField(field, object, Double.valueOf(value));
-        } else if (type.isAssignableFrom(Boolean.class)) {
-            setField(field, object, Boolean.valueOf(value));
-        } else if (type.isAssignableFrom(Character.class)) {
+        } else if (type == char.class || type == Character.class) {
             setField(field, object, value.charAt(0));
             // Other Number children
         } else if (type.isAssignableFrom(BigInteger.class)) {
@@ -271,35 +255,39 @@ public class Clash {
         } else if (type.isAssignableFrom(AtomicLong.class)) {
             setField(field, object, new AtomicLong(Long.valueOf(value)));
             // Primitive arrays
-        } else if (type.isAssignableFrom(byte[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(short[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(int[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(long[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(float[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(double[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(boolean[].class)) {
-            throw TODO;
+        } else if (type == byte[].class) {
+            setField(field, object, handleArray(byte.class, value, Byte::valueOf));
+        } else if (type == short[].class) {
+            setField(field, object, handleArray(short.class, value, Short::valueOf));
+        } else if (type == int[].class) {
+            setField(field, object, handleArray(int.class, value, Integer::valueOf));
+        } else if (type == long[].class) {
+            setField(field, object, handleArray(long.class, value, Long::valueOf));
+        } else if (type == float[].class) {
+            setField(field, object, handleArray(float.class, value, Float::valueOf));
+        } else if (type == double[].class) {
+            setField(field, object, handleArray(double.class, value, Double::valueOf));
+        } else if (type == boolean[].class) {
+            setField(field, object, handleArray(boolean.class, value, Boolean::valueOf));
+        } else if (type == char[].class) { // TODO explicitly handle this from strings
+            setField(field, object, handleArray(char.class, value, s -> s.charAt(0)));
             // Boxed arrays
-        } else if (type.isAssignableFrom(Byte[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(Short[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(Integer[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(Long[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(Float[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(Double[].class)) {
-            throw TODO;
-        } else if (type.isAssignableFrom(Boolean[].class)) {
-            throw TODO;
+        } else if (type == Byte[].class) {
+            setField(field, object, handleArray(Byte.class, value, Byte::valueOf));
+        } else if (type == Short[].class) {
+            setField(field, object, handleArray(Short.class, value, Short::valueOf));
+        } else if (type == Integer[].class) {
+            setField(field, object, handleArray(Integer.class, value, Integer::valueOf));
+        } else if (type == Long[].class) {
+            setField(field, object, handleArray(Long.class, value, Long::valueOf));
+        } else if (type == Float[].class) {
+            setField(field, object, handleArray(Float.class, value, Float::valueOf));
+        } else if (type == Double[].class) {
+            setField(field, object, handleArray(Double.class, value, Double::valueOf));
+        } else if (type == Boolean[].class) {
+            setField(field, object, handleArray(Boolean.class, value, Double::valueOf));
+        } else if (type == Character[].class) { // TODO explicitly handle this from Strings
+            setField(field, object, handleArray(Character.class, value, s -> s.charAt(0)));
             // Other Number arrays
         } else if (type.isAssignableFrom(BigInteger[].class)) {
             throw TODO;
@@ -316,6 +304,25 @@ public class Clash {
         } else {
             throw TODO;
         }
+    }
+
+    private static <T> Object handleArray(final Class<?> arrayClass, final String arg, final Function<String, Object> func) {
+        final String trimmed = arg.trim();
+        final String noBrackets = trimmed.replaceAll("(^[\\[({]\\s*|\\s*[])}]$)", "");
+        final String[] items;
+        if (noBrackets.contains(",")) {
+            items = noBrackets.split(",");
+        } else {
+            items = noBrackets.split("\\s+");
+        }
+
+        final Object array = Array.newInstance(arrayClass, items.length);
+
+        for (int i = 0; i < items.length; i++) {
+            Array.set(array, i, func.apply(items[i]));
+        }
+
+        return array;
     }
 
     private static void setField(final Field field, final Object object, final Object value) throws IllegalAccessException, NoSuchFieldException {
