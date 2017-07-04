@@ -253,6 +253,9 @@ public class Clash {
             setField(field, object, new AtomicInteger(Integer.valueOf(value)));
         } else if (type.isAssignableFrom(AtomicLong.class)) {
             setField(field, object, new AtomicLong(Long.valueOf(value)));
+            // Enum
+        } else if (type.isEnum()) {
+            handleEnum(field, object, value, type);
             // Primitive arrays
         } else if (type == byte[].class) {
             setField(field, object, handleArray(byte.class, value, Byte::valueOf));
@@ -297,8 +300,11 @@ public class Clash {
         } else if (type.isAssignableFrom(AtomicLong[].class)) {
             setField(field, object, handleArray(AtomicLong.class, value, s -> new AtomicLong(Long.valueOf(s))));
             // Other arrays
-        } else if (type.isAssignableFrom(String[].class)) {
+        } else if (type == String[].class) {
             throw TODO;
+            // Array of enums
+        } else if (type.isArray() && type.getComponentType().isEnum()) {
+            setField(field, object, handleArray(type.getComponentType(), value, s -> getEnum(s, type.getComponentType())));
             // Other cases
         } else {
             throw TODO;
@@ -335,6 +341,27 @@ public class Clash {
         }
 
         field.set(object, value);
+    }
+
+    private static void handleEnum(final Field field, final Object object, final String value, final Class<?> type)
+            throws NoSuchFieldException, IllegalAccessException {
+        final Enum<?> constant = getEnum(value, type);
+        if (constant != null) {
+            setField(field, object, constant);
+        } else {
+            throw new ClashException("Could not match '" + value + "' with the a value for " + type.getName());
+        }
+    }
+
+    private static Enum<?> getEnum(final String value, final Class<?> type) {
+        final String cleanedValue = value.trim().replaceAll("\\s+", "_").trim();
+        final Enum<?>[] constants = (Enum<?>[]) type.getEnumConstants();
+        for (Enum<?> constant : constants) {
+            if (constant.name().equalsIgnoreCase(cleanedValue)) {
+                return constant;
+            }
+        }
+        return null;
     }
 
     // I'm evil
