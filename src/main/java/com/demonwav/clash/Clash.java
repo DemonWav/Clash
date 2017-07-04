@@ -226,7 +226,7 @@ public class Clash {
             setField(field, object, initializer.initialize(field.getName(), value));
             // primitives aren't covered by their boxed classes in these checks
             // String first because it's probably very common
-        } else if (type.isAssignableFrom(String.class) || type.isAssignableFrom(CharSequence.class)) {
+        } else if (type.isAssignableFrom(String.class)) {
             setField(field, object, value);
             // Primitives and Boxed types
         } else if (type == byte.class || type == Byte.class) {
