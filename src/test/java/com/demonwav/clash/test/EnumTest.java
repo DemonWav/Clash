@@ -6,11 +6,7 @@ import java.util.Objects;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class EnumTest {
-
-    private static final String one = "ONE";
-    private static final String two = "TwO";
-    private static final String three = "Three With Space";
+public class EnumTest extends BaseEnumTest {
 
     @Test
     public void enumTest() {
@@ -19,7 +15,7 @@ public class EnumTest {
             "-2", two,
             "-3", three
         };
-        Assert.assertEquals(new Bean(Bean.BeanEnum.ONE, Bean.BeanEnum.two, Bean.BeanEnum.THREE_WITH_SPACE), Clash.init(Bean.class, args));
+        Assert.assertEquals(new Bean(BeanEnum.ONE, BeanEnum.two, BeanEnum.THREE_WITH_SPACE), Clash.init(Bean.class, args));
     }
 
     private static class Bean {
@@ -34,10 +30,6 @@ public class EnumTest {
             this.one = one;
             this.two = two;
             this.three = three;
-        }
-
-        private enum BeanEnum {
-            ONE, two, THREE_WITH_SPACE
         }
 
         @Override

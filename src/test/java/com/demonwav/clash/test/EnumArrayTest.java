@@ -6,22 +6,14 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class EnumArrayTest {
-
-    private static final String one = "ONE";
-    private static final String two = "TwO";
-    private static final String three = "Three With Space";
+public class EnumArrayTest extends BaseEnumTest {
 
     @Test
     public void enumArrayTest() {
         final String[] args = {
             "-a", one + ", " + two + ", " + three
         };
-        final Bean init = Clash.init(Bean.class, args);
-        System.out.println(init);
-        Assert.assertEquals(new Bean(new Bean.BeanEnum[] {Bean.BeanEnum.ONE, Bean.BeanEnum.two, Bean.BeanEnum.THREE_WITH_SPACE}),
-                            init
-        );
+        Assert.assertEquals(new Bean(new BeanEnum[] {BeanEnum.ONE, BeanEnum.two, BeanEnum.THREE_WITH_SPACE}), Clash.init(Bean.class, args));
     }
 
     private static class Bean {
@@ -47,10 +39,6 @@ public class EnumArrayTest {
         @Override
         public int hashCode() {
             return Arrays.hashCode(array);
-        }
-
-        private enum BeanEnum {
-            ONE, two, THREE_WITH_SPACE
         }
     }
 }
