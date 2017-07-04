@@ -292,13 +292,13 @@ public class Clash {
         } else if (type == Character[].class) { // TODO explicitly handle this from Strings
             setField(field, object, handleArray(Character.class, value, s -> s.charAt(0)));
             // Other Number arrays
-        } else if (type.isAssignableFrom(BigInteger[].class)) {
+        } else if (type == BigInteger[].class) {
             setField(field, object, handleArray(BigInteger.class, value, BigInteger::new));
-        } else if (type.isAssignableFrom(BigDecimal[].class)) {
+        } else if (type == BigDecimal[].class) {
             setField(field, object, handleArray(BigDecimal.class, value, BigDecimal::new));
-        } else if (type.isAssignableFrom(AtomicInteger[].class)) {
+        } else if (type == AtomicInteger[].class) {
             setField(field, object, handleArray(AtomicInteger.class, value, s -> new AtomicInteger(Integer.valueOf(s))));
-        } else if (type.isAssignableFrom(AtomicLong[].class)) {
+        } else if (type == AtomicLong[].class) {
             setField(field, object, handleArray(AtomicLong.class, value, s -> new AtomicLong(Long.valueOf(s))));
             // Other arrays
         } else if (type == String[].class) {
