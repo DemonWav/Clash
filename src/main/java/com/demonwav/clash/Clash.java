@@ -128,20 +128,21 @@ public class Clash {
         final T[] stuff = func.apply(beanClazz);
         final Class<?> superClazz = beanClazz.getSuperclass();
 
-        if (superClazz != null) {
-            final T[] moreStuff = getAll(arrayClazz, superClazz, func);
-            if (moreStuff.length == 0) {
-                return stuff;
-            }
-
-            //noinspection unchecked
-            final T[] newStuff = (T[]) Array.newInstance(arrayClazz, stuff.length + moreStuff.length);
-            System.arraycopy(stuff, 0, newStuff, 0, stuff.length);
-            System.arraycopy(moreStuff, 0, newStuff, stuff.length, moreStuff.length);
-
-            return newStuff;
+        if (superClazz == null) {
+            return stuff;
         }
-        return stuff;
+
+        final T[] moreStuff = getAll(arrayClazz, superClazz, func);
+        if (moreStuff.length == 0) {
+            return stuff;
+        }
+
+        //noinspection unchecked
+        final T[] newStuff = (T[]) Array.newInstance(arrayClazz, stuff.length + moreStuff.length);
+        System.arraycopy(stuff, 0, newStuff, 0, stuff.length);
+        System.arraycopy(moreStuff, 0, newStuff, stuff.length, moreStuff.length);
+
+        return newStuff;
     }
 
     private static <T> T[] removeUnused(final T[] array, final Class<T> arrayClazz, final Predicate<T> tester) {
