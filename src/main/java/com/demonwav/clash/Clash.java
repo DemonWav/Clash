@@ -175,20 +175,20 @@ public class Clash {
 
             for (String name : annotation.shortNames()) {
                 if (name.startsWith("-")) {
-                    throw new ClashException(dashMessage + name);
+                    throw new ClashException.Dashes(dashMessage + name);
                 }
                 if (pattern.matcher(name).find()) {
-                    throw new ClashException(whitespaceMessage + name);
+                    throw new ClashException.Whitespace(whitespaceMessage + name);
                 }
             }
 
             for (String name : annotation.longNames()) {
                 if (name.startsWith("-")) {
-                    throw new ClashException(dashMessage + name);
+                    throw new ClashException.Dashes(dashMessage + name);
                 }
 
                 if (pattern.matcher(name).find()) {
-                    throw new ClashException(whitespaceMessage + name);
+                    throw new ClashException.Whitespace(whitespaceMessage + name);
                 }
             }
         }
