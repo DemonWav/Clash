@@ -6,7 +6,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -328,25 +327,14 @@ public class Clash {
     private static void setField(final Field field, final Object object, final Object value) throws IllegalAccessException, NoSuchFieldException {
         field.setAccessible(true);
 
-        boolean isFinal = false;
-        try {
-            if (Modifier.isFinal(field.getModifiers())) {
-                isFinal = true;
-                // We can set final fields, so why not
-                final Field modifiers = field.getClass().getDeclaredField("modifiers");
-                modifiers.setAccessible(true);
-                modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-            }
-
-            field.set(object, value);
-        } finally {
-            if (isFinal) {
-                // reset it to final
-                final Field modifiers = field.getClass().getDeclaredField("modifiers");
-                modifiers.setAccessible(true);
-                modifiers.setInt(field, field.getModifiers() | Modifier.FINAL);
-            }
+        if (Modifier.isFinal(field.getModifiers())) {
+            // We can set final fields, so why not
+            final Field modifiers = field.getClass().getDeclaredField("modifiers");
+            modifiers.setAccessible(true);
+            modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
         }
+
+        field.set(object, value);
     }
 
     // I'm evil
