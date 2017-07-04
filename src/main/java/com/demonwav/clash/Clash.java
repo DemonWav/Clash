@@ -246,14 +246,18 @@ public class Clash {
         } else if (type == char.class || type == Character.class) {
             setField(field, object, value.charAt(0));
             // Other Number children
-        } else if (type.isAssignableFrom(BigInteger.class)) {
+        } else if (type == BigInteger.class) {
             setField(field, object, new BigInteger(value));
-        } else if (type.isAssignableFrom(BigDecimal.class)) {
+        } else if (type == BigDecimal.class) {
             setField(field, object, new BigDecimal(value));
-        } else if (type.isAssignableFrom(AtomicInteger.class)) {
+        } else if (type == AtomicInteger.class) {
             setField(field, object, new AtomicInteger(Integer.valueOf(value)));
-        } else if (type.isAssignableFrom(AtomicLong.class)) {
+        } else if (type == AtomicLong.class) {
             setField(field, object, new AtomicLong(Long.valueOf(value)));
+            // Number
+        } else if (type == Number.class) {
+            // Default to BigDecimal since it's most likely to be able to hold whatever input is given
+            setField(field, object, new BigDecimal(value));
             // Enum
         } else if (type.isEnum()) {
             handleEnum(field, object, value, type);
@@ -300,6 +304,9 @@ public class Clash {
             setField(field, object, handleArray(AtomicInteger.class, value, s -> new AtomicInteger(Integer.valueOf(s))));
         } else if (type == AtomicLong[].class) {
             setField(field, object, handleArray(AtomicLong.class, value, s -> new AtomicLong(Long.valueOf(s))));
+        } else if (type == Number[].class) {
+            // Default to array of BigDecimal's, since it's most likely to be able to hold whatever input is given
+            setField(field, object, handleArray(Number.class, value, BigDecimal::new));
             // Other arrays
         } else if (type == String[].class) {
             throw TODO;
