@@ -346,22 +346,18 @@ public class Clash {
     private static void handleEnum(final Field field, final Object object, final String value, final Class<?> type)
             throws NoSuchFieldException, IllegalAccessException {
         final Enum<?> constant = getEnum(value, type);
-        if (constant != null) {
-            setField(field, object, constant);
-        } else {
-            throw new ClashException("Could not match '" + value + "' with the a value for " + type.getName());
-        }
+        setField(field, object, constant);
     }
 
     private static Enum<?> getEnum(final String value, final Class<?> type) {
-        final String cleanedValue = value.trim().replaceAll("\\s+", "_").trim();
+        final String cleanedValue = value.trim().replaceAll("\\s+", "_");
         final Enum<?>[] constants = (Enum<?>[]) type.getEnumConstants();
         for (Enum<?> constant : constants) {
             if (constant.name().equalsIgnoreCase(cleanedValue)) {
                 return constant;
             }
         }
-        return null;
+        throw new ClashException("Could not match '" + value + "' with the a value for " + type.getName());
     }
 
     // I'm evil
