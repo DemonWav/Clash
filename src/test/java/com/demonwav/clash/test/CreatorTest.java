@@ -14,7 +14,7 @@ public class CreatorTest {
 
     @Test
     public void creatorTest() {
-        final String[] args = new String[] {};
+        final String[] args = {};
         Assert.assertEquals(new Bean(string), Clash.init(Bean.class, args));
     }
 

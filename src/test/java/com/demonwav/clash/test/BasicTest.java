@@ -17,7 +17,7 @@ public class BasicTest {
 
     @Test
     public void basicTest() {
-        final String[] args = new String[] {
+        final String[] args = {
             "-b", String.valueOf(b),
             "--short=" + s,
             "-i", String.valueOf(i),
@@ -52,19 +52,6 @@ public class BasicTest {
             this.st = st;
             this.boo = boo;
             this.wat = null;
-        }
-
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("Bean{");
-            sb.append("b=").append(b);
-            sb.append(", s=").append(s);
-            sb.append(", i=").append(i);
-            sb.append(", l=").append(l);
-            sb.append(", st='").append(st).append('\'');
-            sb.append(", boo=").append(boo);
-            sb.append('}');
-            return sb.toString();
         }
 
         @Override

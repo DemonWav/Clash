@@ -15,7 +15,7 @@ public class InitializerDefaultTest {
 
     @Test
     public void initializerDefaultTest() {
-        final String[] args = new String[] {};
+        final String[] args = {};
         Assert.assertEquals(new Bean(asdf + result), Clash.init(Bean.class, args));
     }
 

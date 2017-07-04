@@ -13,7 +13,7 @@ public class InitializerTest {
 
     @Test
     public void initTest() {
-        final String[] args = new String[] {
+        final String[] args = {
             "--result=" + result
         };
 
