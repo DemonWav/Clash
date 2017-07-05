@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,7 +31,7 @@ public class Clash {
             throw new ClashException(e);
         }
 
-        final Field[] fields = removeUnusedFields(getAllFields(clazz));
+        final Field[] fields = getRelevantFields(clazz);
         verifyArgNames(fields);
         final Map<String, Field> argMap = mapArgumentsToFields(fields);
 
@@ -91,7 +92,7 @@ public class Clash {
             }
         }
 
-        final Method[] methods = removeUnusedMethods(getAllMethods(clazz));
+        final Method[] methods = getRelevantMethods(clazz);
         for (Method method : methods) {
             try {
                 method.setAccessible(true);
@@ -104,64 +105,52 @@ public class Clash {
         return t;
     }
 
-    private static Field[] getAllFields(final Class<?> clazz) {
-        return getAll(Field.class, clazz, Class::getDeclaredFields);
-    }
-
-    private static Field[] removeUnusedFields(final Field[] fields) {
-        return removeUnused(fields, Field.class, f ->
+    private static Field[] getRelevantFields(final Class<?> clazz) {
+        return getAll(Field.class, clazz, Class::getDeclaredFields, f ->
+            f.getAnnotation(Argument.class) != null &&
             !Modifier.isTransient(f.getModifiers()) &&
-            !Modifier.isStatic(f.getModifiers()) &&
-            f.getAnnotation(Argument.class) != null
+            !Modifier.isStatic(f.getModifiers())
         );
     }
 
-    private static Method[] getAllMethods(final Class<?> clazz) {
-        return getAll(Method.class, clazz, Class::getDeclaredMethods);
+    private static Method[] getRelevantMethods(final Class<?> clazz) {
+        return getAll(Method.class, clazz, Class::getDeclaredMethods, m ->
+            m.getAnnotation(Init.class) != null &&
+            !Modifier.isStatic(m.getModifiers())
+        );
     }
 
-    private static Method[] removeUnusedMethods(final Method[] methods) {
-        return removeUnused(methods, Method.class, m -> !Modifier.isStatic(m.getModifiers()) && m.getAnnotation(Init.class) != null);
-    }
-
-    private static <T> T[] getAll(final Class<T> arrayClazz, final Class<?> beanClazz, final Function<Class<?>, T[]> func) {
+    private static <T> T[] getAll(final Class<T> arrayClazz, final Class<?> beanClazz, final Function<Class<?>, T[]> func, final Predicate<T> tester) {
         final T[] stuff = func.apply(beanClazz);
+
+        // Filter out invalid things
+        //noinspection unchecked
+        T[] stuff2 = (T[]) Array.newInstance(arrayClazz, stuff.length);
+        int counter = 0;
+        for (T t : stuff) {
+            if (tester.test(t)) {
+                stuff2[counter++] = t;
+            }
+        }
+        stuff2 = Arrays.copyOf(stuff2, counter);
+
         final Class<?> superClazz = beanClazz.getSuperclass();
 
         if (superClazz == null) {
-            return stuff;
+            return stuff2;
         }
 
-        final T[] moreStuff = getAll(arrayClazz, superClazz, func);
+        final T[] moreStuff = getAll(arrayClazz, superClazz, func, tester);
         if (moreStuff.length == 0) {
-            return stuff;
+            return stuff2;
         }
 
         //noinspection unchecked
-        final T[] newStuff = (T[]) Array.newInstance(arrayClazz, stuff.length + moreStuff.length);
-        System.arraycopy(stuff, 0, newStuff, 0, stuff.length);
-        System.arraycopy(moreStuff, 0, newStuff, stuff.length, moreStuff.length);
+        final T[] newStuff = (T[]) Array.newInstance(arrayClazz, stuff2.length + moreStuff.length);
+        System.arraycopy(stuff2, 0, newStuff, 0, stuff2.length);
+        System.arraycopy(moreStuff, 0, newStuff, stuff2.length, moreStuff.length);
 
         return newStuff;
-    }
-
-    private static <T> T[] removeUnused(final T[] array, final Class<T> arrayClazz, final Predicate<T> tester) {
-        //noinspection unchecked
-        final T[] result = (T[]) Array.newInstance(arrayClazz, array.length);
-
-        int counter = 0;
-        for (T t : array) {
-            if (!tester.test(t)) {
-                continue;
-            }
-
-            result[counter++] = t;
-        }
-
-        //noinspection unchecked
-        final T[] finalResult = (T[]) Array.newInstance(arrayClazz, counter);
-        System.arraycopy(result, 0, finalResult, 0, counter);
-        return finalResult;
     }
 
     private static void verifyArgNames(final Field[] fields) {
