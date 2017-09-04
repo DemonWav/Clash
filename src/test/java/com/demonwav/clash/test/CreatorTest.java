@@ -18,7 +18,7 @@ public class CreatorTest {
         Assert.assertEquals(new Bean(string), Clash.init(Bean.class, args));
     }
 
-    private static class Bean {
+    private static final class Bean {
         @Argument(shortNames = "r", defaultCreator = Create.class)
         private final String res;
 

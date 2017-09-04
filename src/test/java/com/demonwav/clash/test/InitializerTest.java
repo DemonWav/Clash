@@ -20,7 +20,7 @@ public class InitializerTest {
         Assert.assertEquals(new Bean(result + result), Clash.init(Bean.class, args));
     }
 
-    private static class Bean {
+    private static final class Bean {
         @Argument(shortNames = "r", longNames = "result", initializer = Init.class)
         private final String res;
 

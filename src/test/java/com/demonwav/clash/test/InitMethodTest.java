@@ -22,7 +22,7 @@ public class InitMethodTest {
         Assert.assertEquals(new Bean(firstName, lastName, fullName), Clash.init(Bean.class, args));
     }
 
-    private static class Bean {
+    private static final class Bean {
         @Argument(shortNames = "f")
         private final String firstName;
         @Argument(shortNames = "l")

@@ -28,7 +28,7 @@ public class BasicTest {
         Assert.assertEquals(new Bean(b, s, i, l, st, boo), Clash.init(Bean.class, args));
     }
 
-    private static class Bean {
+    private static final class Bean {
         @Argument(shortNames = "b", longNames = "byte")
         private final byte b;
         @Argument(shortNames = "s", longNames = "short")

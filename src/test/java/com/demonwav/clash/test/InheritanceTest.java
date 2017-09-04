@@ -22,7 +22,7 @@ public class InheritanceTest {
         Assert.assertEquals(new BeanTwo(one, wat + one, two, wat + two), Clash.init(BeanTwo.class, args));
     }
 
-    private static class BeanTwo extends BeanOne {
+    private static final class BeanTwo extends BeanOne {
         @Argument(shortNames = "t")
         private final String two;
         private String watTwo;

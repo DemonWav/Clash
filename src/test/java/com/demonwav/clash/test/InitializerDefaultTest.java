@@ -19,7 +19,7 @@ public class InitializerDefaultTest {
         Assert.assertEquals(new Bean(asdf + result), Clash.init(Bean.class, args));
     }
 
-    private static class Bean {
+    private static final class Bean {
         @Argument(shortNames = "r", initializer = Init.class, defaultValue = asdf)
         private final String res;
 

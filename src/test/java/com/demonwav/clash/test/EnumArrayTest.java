@@ -16,7 +16,7 @@ public class EnumArrayTest extends BaseEnumTest {
         Assert.assertEquals(new Bean(new BeanEnum[] {BeanEnum.ONE, BeanEnum.two, BeanEnum.THREE_WITH_SPACE}), Clash.init(Bean.class, args));
     }
 
-    private static class Bean {
+    private static final class Bean {
         @Argument(shortNames = "a")
         private final BeanEnum[] array;
 

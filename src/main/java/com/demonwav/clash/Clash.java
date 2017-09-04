@@ -6,11 +6,17 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -20,13 +26,11 @@ import sun.misc.Unsafe;
 
 public class Clash {
 
-    private static final UnsupportedOperationException TODO = new UnsupportedOperationException();
-
     public static <T> T init(final Class<T> clazz, final String[] args) {
         final T t;
         try {
             //noinspection unchecked
-            t = (T) getUnsafeNoSecurity().allocateInstance(clazz);
+            t = (T) getUnsafe().allocateInstance(clazz);
         } catch (InstantiationException e) {
             throw new ClashException(e);
         }
@@ -212,103 +216,169 @@ public class Clash {
 
         if (!annotation.initializer().isInterface()) {
             final Initializer initializer = init(annotation.initializer());
-            setField(field, object, initializer.initialize(field.getName(), value));
-            // primitives aren't covered by their boxed classes in these checks
-            // String first because it's probably very common
-        } else if (type.isAssignableFrom(String.class)) {
-            setField(field, object, value);
-            // Primitives and Boxed types
-        } else if (type == byte.class || type == Byte.class) {
-            setField(field, object, Byte.valueOf(value));
-        } else if (type == short.class || type == Short.class) {
-            setField(field, object, Short.valueOf(value));
-        } else if (type == int.class || type == Integer.class) {
-            setField(field, object, Integer.valueOf(value));
-        } else if (type == long.class || type == Long.class) {
-            setField(field, object, Long.valueOf(value));
-        } else if (type == float.class || type == Float.class) {
-            setField(field, object, Float.valueOf(value));
-        } else if (type == double.class || type == Double.class) {
-            setField(field, object, Double.valueOf(value));
-        } else if (type == boolean.class || type == Boolean.class) {
-            setField(field, object, Boolean.valueOf(value));
-        } else if (type == char.class || type == Character.class) {
-            setField(field, object, value.charAt(0));
-            // Other Number children
-        } else if (type == BigInteger.class) {
-            setField(field, object, new BigInteger(value));
-        } else if (type == BigDecimal.class) {
-            setField(field, object, new BigDecimal(value));
-        } else if (type == AtomicInteger.class) {
-            setField(field, object, new AtomicInteger(Integer.valueOf(value)));
-        } else if (type == AtomicLong.class) {
-            setField(field, object, new AtomicLong(Long.valueOf(value)));
-            // Number
-        } else if (type == Number.class) {
-            // Default to BigDecimal since it's most likely to be able to hold whatever input is given
-            setField(field, object, new BigDecimal(value));
-            // Enum
-        } else if (type.isEnum()) {
-            handleEnum(field, object, value, type);
-            // Primitive arrays
-        } else if (type == byte[].class) {
-            setField(field, object, handleArray(byte.class, value, Byte::valueOf));
-        } else if (type == short[].class) {
-            setField(field, object, handleArray(short.class, value, Short::valueOf));
-        } else if (type == int[].class) {
-            setField(field, object, handleArray(int.class, value, Integer::valueOf));
-        } else if (type == long[].class) {
-            setField(field, object, handleArray(long.class, value, Long::valueOf));
-        } else if (type == float[].class) {
-            setField(field, object, handleArray(float.class, value, Float::valueOf));
-        } else if (type == double[].class) {
-            setField(field, object, handleArray(double.class, value, Double::valueOf));
-        } else if (type == boolean[].class) {
-            setField(field, object, handleArray(boolean.class, value, Boolean::valueOf));
-        } else if (type == char[].class) { // TODO explicitly handle this from strings
-            setField(field, object, handleArray(char.class, value, s -> s.charAt(0)));
-            // Boxed arrays
-        } else if (type == Byte[].class) {
-            setField(field, object, handleArray(Byte.class, value, Byte::valueOf));
-        } else if (type == Short[].class) {
-            setField(field, object, handleArray(Short.class, value, Short::valueOf));
-        } else if (type == Integer[].class) {
-            setField(field, object, handleArray(Integer.class, value, Integer::valueOf));
-        } else if (type == Long[].class) {
-            setField(field, object, handleArray(Long.class, value, Long::valueOf));
-        } else if (type == Float[].class) {
-            setField(field, object, handleArray(Float.class, value, Float::valueOf));
-        } else if (type == Double[].class) {
-            setField(field, object, handleArray(Double.class, value, Double::valueOf));
-        } else if (type == Boolean[].class) {
-            setField(field, object, handleArray(Boolean.class, value, Double::valueOf));
-        } else if (type == Character[].class) { // TODO explicitly handle this from Strings
-            setField(field, object, handleArray(Character.class, value, s -> s.charAt(0)));
-            // Other Number arrays
-        } else if (type == BigInteger[].class) {
-            setField(field, object, handleArray(BigInteger.class, value, BigInteger::new));
-        } else if (type == BigDecimal[].class) {
-            setField(field, object, handleArray(BigDecimal.class, value, BigDecimal::new));
-        } else if (type == AtomicInteger[].class) {
-            setField(field, object, handleArray(AtomicInteger.class, value, s -> new AtomicInteger(Integer.valueOf(s))));
-        } else if (type == AtomicLong[].class) {
-            setField(field, object, handleArray(AtomicLong.class, value, s -> new AtomicLong(Long.valueOf(s))));
-        } else if (type == Number[].class) {
-            // Default to array of BigDecimal's, since it's most likely to be able to hold whatever input is given
-            setField(field, object, handleArray(Number.class, value, BigDecimal::new));
-            // Other arrays
-        } else if (type == String[].class) {
-            throw TODO;
-            // Array of enums
-        } else if (type.isArray() && type.getComponentType().isEnum()) {
-            setField(field, object, handleArray(type.getComponentType(), value, s -> getEnum(s, type.getComponentType())));
-            // Other cases
+            final Object objectValue = initializer.initialize(field.getName(), value);
+            setField(field, object, objectValue);
         } else {
-            throw TODO;
+            final Object objectValue = getFieldValue(type, field, value);
+            setField(field, object, objectValue);
         }
     }
 
-    private static Object handleArray(final Class<?> arrayClass, final String arg, final Function<String, Object> func) {
+    @SuppressWarnings("unchecked") private static Object getFieldValue(final Class<?> type, final Field field, final String value) {
+        // primitives aren't covered by their boxed classes in these checks
+        // String first because it's probably very common
+        if (type.isAssignableFrom(String.class)) {
+            return value;
+        // Primitives and Boxed types
+        } else if (type == byte.class || type == Byte.class) {
+            return Byte.valueOf(value);
+        } else if (type == short.class || type == Short.class) {
+            return Short.valueOf(value);
+        } else if (type == int.class || type == Integer.class) {
+            return Integer.valueOf(value);
+        } else if (type == long.class || type == Long.class) {
+            return Long.valueOf(value);
+        } else if (type == float.class || type == Float.class) {
+            return Float.valueOf(value);
+        } else if (type == double.class || type == Double.class) {
+            return Double.valueOf(value);
+        } else if (type == boolean.class || type == Boolean.class) {
+            return Boolean.valueOf(value);
+        } else if (type == char.class || type == Character.class) {
+            return value.charAt(0);
+        // Other Number children
+        } else if (type == BigInteger.class) {
+            return new BigInteger(value);
+        } else if (type == BigDecimal.class) {
+            return new BigDecimal(value);
+        } else if (type == AtomicInteger.class) {
+            return new AtomicInteger(Integer.valueOf(value));
+        } else if (type == AtomicLong.class) {
+            return new AtomicLong(Long.valueOf(value));
+        // Number
+        } else if (type == Number.class) {
+            // Default to BigDecimal since it's most likely to be able to hold whatever input is given
+            return new BigDecimal(value);
+        // Enum
+        } else if (type.isEnum()) {
+            return getEnum(value, type);
+        // Primitive arrays
+        } else if (type == byte[].class) {
+            return handleArray(byte.class, value, Byte::valueOf);
+        } else if (type == short[].class) {
+            return handleArray(short.class, value, Short::valueOf);
+        } else if (type == int[].class) {
+            return handleArray(int.class, value, Integer::valueOf);
+        } else if (type == long[].class) {
+            return handleArray(long.class, value, Long::valueOf);
+        } else if (type == float[].class) {
+            return handleArray(float.class, value, Float::valueOf);
+        } else if (type == double[].class) {
+            return handleArray(double.class, value, Double::valueOf);
+        } else if (type == boolean[].class) {
+            return handleArray(boolean.class, value, Boolean::valueOf);
+        } else if (type == char[].class) {
+            final String trimmed = value.trim();
+            final char s = trimmed.charAt(0);
+            final char e = trimmed.charAt(trimmed.length() - 1);
+            final boolean isArray = (s == '[' || s == '(' || s == '{') && (e == ']' || e == ')' || e == '}');
+            if (isArray) {
+                return handleArray(char.class, value, string -> string.charAt(0));
+            } else {
+                return value.toCharArray();
+            }
+        // Boxed arrays
+        } else if (type == Byte[].class) {
+            return handleArray(Byte.class, value, Byte::valueOf);
+        } else if (type == Short[].class) {
+            return handleArray(Short.class, value, Short::valueOf);
+        } else if (type == Integer[].class) {
+            return handleArray(Integer.class, value, Integer::valueOf);
+        } else if (type == Long[].class) {
+            return handleArray(Long.class, value, Long::valueOf);
+        } else if (type == Float[].class) {
+            return handleArray(Float.class, value, Float::valueOf);
+        } else if (type == Double[].class) {
+            return handleArray(Double.class, value, Double::valueOf);
+        } else if (type == Boolean[].class) {
+            return handleArray(Boolean.class, value, Double::valueOf);
+        } else if (type == Character[].class) {
+            final String trimmed = value.trim();
+            final char s = trimmed.charAt(0);
+            final char e = trimmed.charAt(trimmed.length() - 1);
+            final boolean isArray = (s == '[' || s == '(' || s == '{') && (e == ']' || e == ')' || e == '}');
+            if (isArray) {
+                return handleArray(Character.class, value, string -> string.charAt(0));
+            } else {
+                return value.toCharArray();
+            }
+        // Other Number arrays
+        } else if (type == BigInteger[].class) {
+            return handleArray(BigInteger.class, value, BigInteger::new);
+        } else if (type == BigDecimal[].class) {
+            return  handleArray(BigDecimal.class, value, BigDecimal::new);
+        } else if (type == AtomicInteger[].class) {
+            return handleArray(AtomicInteger.class, value, s -> new AtomicInteger(Integer.valueOf(s)));
+        } else if (type == AtomicLong[].class) {
+            return handleArray(AtomicLong.class, value, s -> new AtomicLong(Long.valueOf(s)));
+        } else if (type == Number[].class) {
+            // Default to array of BigDecimal's, since it's most likely to be able to hold whatever input is given
+            return handleArray(Number.class, value, BigDecimal::new);
+        // Other arrays
+        } else if (type == String[].class) {
+            return handleArray(String.class, value, Function.identity());
+        // Array of enums
+        } else if (type.isArray() && type.getComponentType().isEnum()) {
+            return handleArray(type.getComponentType(), value, s -> getEnum(s, type.getComponentType()));
+        // Other cases
+        } else if (List.class.isAssignableFrom(type)) {
+            final Type genericType = field.getGenericType();
+            if (genericType instanceof ParameterizedType) {
+                final ParameterizedType paramType = (ParameterizedType) genericType;
+                final Class<?> listType = (Class<?>) paramType.getActualTypeArguments()[0];
+                final Object array = handleArray(listType, value, string -> getFieldValue(listType, field, string));
+                final ArrayList list = new ArrayList();
+                final int length = Array.getLength(array);
+                for (int i = 0; i < length; i++) {
+                    list.add(Array.get(array, i));
+                }
+                return list;
+            } else {
+                final Object array = handleArray(Object.class, value, Function.identity());
+                final ArrayList list = new ArrayList();
+                final int length = Array.getLength(array);
+                for (int i = 0; i < length; i++) {
+                    list.add(Array.get(array, i));
+                }
+                return list;
+            }
+        } else if (Set.class.isAssignableFrom(type)) {
+            final Type genericType = field.getGenericType();
+            if (genericType instanceof ParameterizedType) {
+                final ParameterizedType paramType = (ParameterizedType) genericType;
+                final Class<?> listType = (Class<?>) paramType.getActualTypeArguments()[0];
+                final Object array = handleArray(listType, value, string -> getFieldValue(listType, field, string));
+                final HashSet set = new HashSet();
+                final int length = Array.getLength(array);
+                for (int i = 0; i < length; i++) {
+                    set.add(Array.get(array, i));
+                }
+                return set;
+            } else {
+                final Object array = handleArray(Object.class, value, Function.identity());
+                final HashSet set = new HashSet();
+                final int length = Array.getLength(array);
+                for (int i = 0; i < length; i++) {
+                    set.add(Array.get(array, i));
+                }
+                return set;
+            }
+        } else {
+            throw new IllegalStateException("Cannot map field of type '" + type + "'");
+        }
+    }
+
+    private static Object handleArray(final Class<?> arrayClass, final String arg, final Function<String, ?> func) {
         final String trimmed = arg.trim();
         final String noBrackets = trimmed.replaceAll("(^[\\[({]\\s*|\\s*[])}]$)", "");
         final String[] items;
@@ -340,12 +410,6 @@ public class Clash {
         field.set(object, value);
     }
 
-    private static void handleEnum(final Field field, final Object object, final String value, final Class<?> type)
-            throws NoSuchFieldException, IllegalAccessException {
-        final Enum<?> constant = getEnum(value, type);
-        setField(field, object, constant);
-    }
-
     private static Enum<?> getEnum(final String value, final Class<?> type) {
         final String cleanedValue = value.trim().replaceAll("\\s+", "_");
         final Enum<?>[] constants = (Enum<?>[]) type.getEnumConstants();
@@ -357,8 +421,7 @@ public class Clash {
         throw new ClashException("Could not match '" + value + "' with the a value for " + type.getName());
     }
 
-    // I'm evil
-    private static Unsafe getUnsafeNoSecurity() {
+    private static Unsafe getUnsafe() {
         try {
             final Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
             theUnsafe.setAccessible(true);
