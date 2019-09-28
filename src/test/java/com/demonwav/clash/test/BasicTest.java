@@ -2,7 +2,8 @@ package com.demonwav.clash.test;
 
 import com.demonwav.clash.Argument;
 import com.demonwav.clash.Clash;
-import java.util.Objects;
+import lombok.Data;
+import lombok.Value;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,56 +26,24 @@ public class BasicTest {
             "--boolean=" + boo
         };
 
-        Assert.assertEquals(new Bean(b, s, i, l, st, boo), Clash.init(Bean.class, args));
+        Assert.assertEquals(new Bean(b, s, i, l, st, boo, null), Clash.init(Bean.class, args));
     }
 
-    private static final class Bean {
+    @Value
+    private static class Bean {
         @Argument(shortNames = "b", longNames = "byte")
-        private final byte b;
+        byte b;
         @Argument(shortNames = "s", longNames = "short")
-        private final short s;
+        short s;
         @Argument(shortNames = "i", longNames = "integer")
-        private final int i;
+        int i;
         @Argument(shortNames = "l", longNames = "long", defaultValue = "" + BasicTest.l)
-        private final long l;
+        long l;
         @Argument(shortNames = "st", longNames = "string")
-        private final String st;
+        String st;
         @Argument(shortNames = "boo", longNames = "boolean")
-        private final Boolean boo;
+        Boolean boo;
         @Argument(shortNames = "wat", required = false)
-        private final Object wat;
-
-        private Bean(byte b, short s, int i, long l, String st, Boolean boo) {
-            this.b = b;
-            this.s = s;
-            this.i = i;
-            this.l = l;
-            this.st = st;
-            this.boo = boo;
-            this.wat = null;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            final Bean bean = (Bean) o;
-            return b == bean.b &&
-                s == bean.s &&
-                i == bean.i &&
-                l == bean.l &&
-                Objects.equals(st, bean.st) &&
-                Objects.equals(boo, bean.boo) &&
-                Objects.equals(wat, bean.wat);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(b, s, i, l, st, boo, wat);
-        }
+        Object wat;
     }
 }

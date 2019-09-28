@@ -3,8 +3,9 @@ package com.demonwav.clash.test;
 import com.demonwav.clash.Argument;
 import com.demonwav.clash.Clash;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
+import lombok.Data;
+import lombok.Value;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,29 +28,9 @@ public class SetTest {
         Assert.assertEquals(new Bean(set), Clash.init(Bean.class, args));
     }
 
+    @Value
     private static final class Bean {
         @Argument(shortNames = "s")
-        private final Set<String> set;
-
-        private Bean(Set<String> set) {
-            this.set = set;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            final Bean bean = (Bean) o;
-            return Objects.equals(set, bean.set);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(set);
-        }
+        Set<String> set;
     }
 }

@@ -3,7 +3,10 @@ package com.demonwav.clash.test;
 import com.demonwav.clash.Argument;
 import com.demonwav.clash.Clash;
 import com.demonwav.clash.Init;
-import java.util.Objects;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Value;
+import lombok.experimental.NonFinal;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,41 +25,18 @@ public class InitMethodTest {
         Assert.assertEquals(new Bean(firstName, lastName, fullName), Clash.init(Bean.class, args));
     }
 
-    private static final class Bean {
+    @Value
+    @AllArgsConstructor
+    private static class Bean {
         @Argument(shortNames = "f")
-        private final String firstName;
+        String firstName;
         @Argument(shortNames = "l")
-        private final String lastName;
-        private String fullName;
-
-        private Bean(String firstName, String lastName, String fullName) {
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.fullName = fullName;
-        }
+        String lastName;
+        @NonFinal String fullName;
 
         @Init
         private void init() {
             fullName = firstName + " " + lastName;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            final Bean bean = (Bean) o;
-            return Objects.equals(firstName, bean.firstName) &&
-                Objects.equals(lastName, bean.lastName) &&
-                Objects.equals(fullName, bean.fullName);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(firstName, lastName, fullName);
         }
     }
 }

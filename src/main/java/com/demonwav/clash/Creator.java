@@ -1,5 +1,5 @@
 package com.demonwav.clash;
 
 public interface Creator<T> {
-    T createDefault(String fieldName);
+    T createDefault(final String fieldName);
 }

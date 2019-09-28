@@ -4,7 +4,7 @@ import com.demonwav.clash.Argument;
 import com.demonwav.clash.Clash;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,29 +27,9 @@ public class ListTest {
         Assert.assertEquals(new Bean(list), Clash.init(Bean.class, args));
     }
 
+    @Data
     private static final class Bean {
         @Argument(shortNames = "l")
         private final List<String> list;
-
-        private Bean(List<String> list) {
-            this.list = list;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            final Bean bean = (Bean) o;
-            return Objects.equals(list, bean.list);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(list);
-        }
     }
 }

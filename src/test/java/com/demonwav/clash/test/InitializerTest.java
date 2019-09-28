@@ -3,7 +3,8 @@ package com.demonwav.clash.test;
 import com.demonwav.clash.Argument;
 import com.demonwav.clash.Clash;
 import com.demonwav.clash.Initializer;
-import java.util.Objects;
+import lombok.Data;
+import lombok.Value;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -20,30 +21,10 @@ public class InitializerTest {
         Assert.assertEquals(new Bean(result + result), Clash.init(Bean.class, args));
     }
 
+    @Value
     private static final class Bean {
         @Argument(shortNames = "r", longNames = "result", initializer = Init.class)
-        private final String res;
-
-        private Bean(String res) {
-            this.res = res;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            final Bean bean = (Bean) o;
-            return Objects.equals(res, bean.res);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(res);
-        }
+        String res;
 
         private static class Init implements Initializer<String> {
             @Override
